@@ -1,6 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Module } from '@nestjs/common';
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'development',
     }),
+    HealthModule,
   ],
   controllers: [],
   providers: [],

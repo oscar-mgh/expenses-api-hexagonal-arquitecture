@@ -7,6 +7,7 @@ import { FindExpenseByIdUseCase } from './application/use-cases/find-expense-by-
 import { UpdateExpenseUseCase } from './application/use-cases/update-expense.use-case';
 import { ExpenseRepository } from './domain/interfaces/expense.repository.port';
 import { ExpenseEntity } from './infrastructure/repositories/expense.entity';
+import { TypeOrmExpenseRepositoryAdapter } from './infrastructure/repositories/typeorm-expense.repository.adapter';
 import { EXPENSE_REPOSITORY } from './tokens';
 
 const useCases = [
@@ -40,7 +41,13 @@ const useCases = [
 @Module({
   imports: [TypeOrmModule.forFeature([ExpenseEntity])],
   controllers: [],
-  providers: [...useCases],
+  providers: [
+    {
+      provide: EXPENSE_REPOSITORY,
+      useClass: TypeOrmExpenseRepositoryAdapter,
+    },
+    ...useCases,
+  ],
   exports: [TypeOrmModule],
 })
 export class ExpensesModule {}

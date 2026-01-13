@@ -1,6 +1,7 @@
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Module } from '@nestjs/common';
+import { ExpensesModule } from './expenses/expenses.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { HealthModule } from './health/health.module';
       synchronize: process.env.NODE_ENV === 'development',
     }),
     HealthModule,
+    ExpensesModule,
   ],
   controllers: [],
   providers: [],

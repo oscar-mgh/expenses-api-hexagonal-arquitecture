@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExpensesModule } from './expenses/expenses.module';
 import { HealthModule } from './health/health.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { HealthModule } from './health/health.module';
     }),
     HealthModule,
     ExpensesModule,
+    SeedModule,
   ],
   controllers: [],
   providers: [],

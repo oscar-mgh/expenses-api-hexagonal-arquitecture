@@ -10,9 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalFilters(new HttpExceptionFilter());
-
   app.setGlobalPrefix('api/v1');
-
   app.useGlobalInterceptors(new LoggerInterceptor());
 
   app.useGlobalPipes(
@@ -23,6 +21,18 @@ async function bootstrap() {
       stopAtFirstError: true,
     }),
   );
+
+  const isDev = process.env.NODE_ENV === 'development';
+  const allowedOrigins = isDev
+    ? true
+    : (process.env.ALLOWED_ORIGINS ?? '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+
+  app.enableCors({
+    origin: allowedOrigins,
+  });
 
   await app.listen(port);
   logger.log(`Application is running on port: ${port}`);

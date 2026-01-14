@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -33,6 +34,16 @@ async function bootstrap() {
   app.enableCors({
     origin: allowedOrigins,
   });
+
+  app.useGlobalInterceptors(new LoggerInterceptor());
+
+  const config = new DocumentBuilder()
+    .setTitle('Expenses API')
+    .setDescription('expenses API avialable endpoints')
+    .setVersion('1.0')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
   await app.listen(port);
   logger.log(`Application is running on port: ${port}`);

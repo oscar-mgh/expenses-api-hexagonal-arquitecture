@@ -1,9 +1,14 @@
 import { ExpensePagination } from 'src/expenses/application/types/expense.types';
-import { ExpenseQueryDto } from '../../application/dto/expenses-query.dto';
 import { Expense } from '../entity/expense.entity';
 
+type ExpenseQuery = {
+  page: number;
+  limit: number;
+  category?: string;
+};
+
 export interface ExpenseRepository {
-  findAll(ExpenseQueryDto: ExpenseQueryDto): Promise<ExpensePagination>;
+  findAll(query: ExpenseQuery): Promise<ExpensePagination>;
 
   findById(id: number): Promise<Expense | null>;
 

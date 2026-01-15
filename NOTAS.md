@@ -24,6 +24,7 @@
 
 # Desafíos Enfrentados
 
+* **Conocimiento de una estructura clara:** Al investigar sobre la estructura más común de carpetas y archivos que se usan en la arquitectura hexagonal, opté por usar la estructura que fue sugerida, la dificultad fue saber como se usan los DTOs y como se relacionan realmente con los puertos
 * **Alineación de tipos:** Resolución de conflictos iniciales al usar `number` en DTOs y `string` en la entidad. Se estandarizó `amount` como `string` en toda la cadena.
 * **Desacoplamiento de puertos:** Corrección de la arquitectura para que los puertos del repositorio solo acepten objetos del dominio (`Expense`, `Partial<Expense>`) y no DTOs.
 * **Paginación eficiente:** Implementación de `getManyAndCount()` con filtros dinámicos y validación de campos permitidos para evitar riesgos de inyección SQL.

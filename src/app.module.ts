@@ -19,6 +19,12 @@ import { SeedModule } from './seed/seed.module';
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: process.env.NODE_ENV === 'development',
+      ssl: true,
+      extra: {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      },
     }),
     HealthModule,
     ExpensesModule,

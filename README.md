@@ -1,98 +1,281 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Expenses
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST con arquitectura hexagonal para la gestión de gastos desarrollada con NestJS, TypeORM y PostgreSQL. Permite crear, consultar, actualizar y eliminar gastos con soporte para paginación y filtrado por categoría, caracteristicas adicionales (Logging, Docker, Swagger).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Desarrollo con Docker
 
-## Description
+### Requisitos
+- Docker
+- Configurar variables de entorno
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Pasos para levantar el proyecto
 
-## Project setup
+1. **Clonar el repositorio e instalar dependencias:**
+   ```bash
+   yarn install
+   ```
 
-```bash
-$ yarn install
+2. **Configurar variables de entorno:**
+   renombrar el archivo `.env.template` a `.env` en la raíz del proyecto y asignar variables por ejemplo:
+   ```
+   DB_NAME=expenses_db
+   DB_USER=postgres
+   DB_PASSWORD=postgres
+   DB_PORT=5432
+   PORT=3000
+   NODE_ENV=development
+   ```
+
+  **Nota** para produccion se debe de establecer la variable ALLOWED_ORIGINS
+
+3. **Levantar la base de datos con Docker:**
+   ```bash
+   docker-compose up -d
+   ```
+
+**Se crearan las imagenes de la base de datos de postgres y la API corriendo en el puerto indicado "3000" por defecto**
+
+La API estará disponible en `http://localhost:3000/api/v1` - Documentacion de Swagger en `http://localhost:3000/api`
+
+## Endpoints disponibles
+
+### Health Check
+
+**GET** `/api/v1/health`
+
+Verifica el estado de la API y la conexión a la base de datos.
+
+**Respuesta exitosa:** `200 OK`
+```json
+{
+  "status": "ok",
+  "info": { "database": { "status": "up" } }
+}
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ yarn run start
+### Seed y Limpieza de Datos
 
-# watch mode
-$ yarn run start:dev
+#### Poblar base de datos con datos de prueba
 
-# production mode
-$ yarn run start:prod
+**POST** `/api/v1/seed`
+
+**⚠️ Importante:** Este endpoint solo funciona en modo desarrollo (`NODE_ENV !== 'production'`). Inserta datos de prueba en la base de datos si la tabla está vacía.
+
+**Respuesta exitosa:** `200 OK`
+```json
+{
+  "message": "Seed completed successfully",
+  "totalInserted": 25
+}
 ```
 
-## Run tests
+**Errores posibles:**
+- `403 Forbidden`: Operación deshabilitada en producción
+- `200 OK` con mensaje: "Seed already executed" - La tabla ya contiene datos
 
-```bash
-# unit tests
-$ yarn run test
+**Uso recomendado:** Ejecuta este endpoint después de levantar la aplicación por primera vez para tener datos de prueba disponibles inmediatamente.
 
-# e2e tests
-$ yarn run test:e2e
+---
 
-# test coverage
-$ yarn run test:cov
+#### Limpiar todos los gastos
+
+**POST** `/api/v1/seed/clear`
+
+**⚠️ Importante:** Este endpoint solo funciona en modo desarrollo (`NODE_ENV !== 'production'`). Elimina todos los gastos de la base de datos y reinicia los IDs.
+
+**Respuesta exitosa:** `200 OK`
+```json
+{
+  "message": "Expenses table cleared"
+}
 ```
 
-## Deployment
+**Errores posibles:**
+- `403 Forbidden`: Operación deshabilitada en producción
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+**Uso recomendado:** Utiliza este endpoint para limpiar la base de datos antes de ejecutar el seed nuevamente o para resetear el estado de desarrollo.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+### Gastos (Expenses)
+
+#### Crear gasto
+
+**POST** `/api/v1/expenses`
+
+Crea un nuevo gasto.
+
+**Body (JSON):**
+- `description` (string, requerido, mínimo 5 caracteres): Descripción del gasto
+- `amount` (string, requerido): Monto del gasto (debe ser mayor a 0, máximo 2 decimales)
+- `category` (string, opcional, máximo 50 caracteres): Categoría del gasto
+
+**Ejemplo:**
+```json
+{
+  "description": "Compra de supermercado",
+  "amount": "150.50",
+  "category": "comida"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Respuesta exitosa:** `201 Created`
+```json
+{
+  "id": 1,
+  "description": "Compra de supermercado",
+  "amount": "150.50",
+  "category": "comida",
+  "date": "2024-01-15T10:30:00.000Z"
+}
+```
 
-## Resources
+**Errores posibles:**
+- `400 Bad Request`: Validación fallida (campos requeridos faltantes, formato incorrecto, monto inválido)
+- `500 Internal Server Error`: Error interno del servidor
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+#### Listar gastos
 
-## Support
+**GET** `/api/v1/expenses`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Obtiene una lista paginada de gastos, ordenados por fecha descendente.
 
-## Stay in touch
+**Query Parameters:**
+- `page` (number, opcional, default: 1, mínimo: 1): Número de página
+- `limit` (number, opcional, default: 10, mínimo: 1, máximo: 100): Cantidad de resultados por página
+- `category` (string, opcional, máximo 50 caracteres): Filtrar por categoría
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Ejemplo:**
+```
+GET /api/v1/expenses?page=1&limit=10&category=comida
+```
 
-## License
+**Respuesta exitosa:** `200 OK`
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "description": "Compra de supermercado",
+      "amount": "150.50",
+      "category": "comida",
+      "date": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "meta": {
+    "total": 25,
+    "page": 1,
+    "lastPage": 3
+  }
+}
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Errores posibles:**
+- `400 Bad Request`: Parámetros de consulta inválidos
+- `500 Internal Server Error`: Error interno del servidor
+
+---
+
+#### Obtener gasto por ID
+
+**GET** `/api/v1/expenses/:id`
+
+Obtiene un gasto específico por su ID.
+
+**Parámetros de ruta:**
+- `id` (number): ID del gasto
+
+**Respuesta exitosa:** `200 OK`
+```json
+{
+  "id": 1,
+  "description": "Compra de supermercado",
+  "amount": "150.50",
+  "category": "comida",
+  "date": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Errores posibles:**
+- `404 Not Found`: Gastos no encontrado
+- `500 Internal Server Error`: Error interno del servidor
+
+---
+
+#### Actualizar gasto
+
+**PATCH** `/api/v1/expenses/:id`
+
+Actualiza parcialmente un gasto existente.
+
+**Parámetros de ruta:**
+- `id` (number): ID del gasto
+
+**Body (JSON):** Todos los campos son opcionales
+- `description` (string, mínimo 5 caracteres): Descripción del gasto
+- `amount` (string): Monto del gasto (debe ser mayor a 0, máximo 2 decimales)
+- `category` (string, máximo 50 caracteres): Categoría del gasto
+
+**Ejemplo:**
+```json
+{
+  "amount": "175.00"
+}
+```
+
+**Respuesta exitosa:** `200 OK`
+```json
+{
+  "id": 1,
+  "description": "Compra de supermercado",
+  "amount": "175.00",
+  "category": "comida",
+  "date": "2024-01-15T10:30:00.000Z"
+}
+```
+
+**Errores posibles:**
+- `400 Bad Request`: Validación fallida
+- `404 Not Found`: Gastos no encontrado
+- `500 Internal Server Error`: Error interno del servidor
+
+---
+
+#### Eliminar gasto
+
+**DELETE** `/api/v1/expenses/:id`
+
+Elimina un gasto por su ID.
+
+**Parámetros de ruta:**
+- `id` (number): ID del gasto
+
+**Respuesta exitosa:** `204 No Content` (sin cuerpo de respuesta)
+
+**Errores posibles:**
+- `404 Not Found`: Gastos no encontrado
+- `500 Internal Server Error`: Error interno del servidor
+
+---
+
+## Notas adicionales
+
+- Todos los endpoints requieren que el body sea válido JSON
+- La validación de datos se realiza automáticamente usando `class-validator`
+- Los campos no permitidos en el body serán rechazados automáticamente
+- El prefijo base de la API es `/api/v1`
+- El puerto por defecto es `3000` (configurable mediante variable de entorno `PORT`)
+- Para correr en modo desarrollo ya sea con docker o directamente la API se deben de comentar los siguientes atributos en el app.module.ts
+```
+// ssl: true,
+// extra: {
+//   ssl: {
+//     rejectUnauthorized: false,
+//   },
+// },
+```
+
